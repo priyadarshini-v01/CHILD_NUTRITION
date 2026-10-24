@@ -1,0 +1,282 @@
+Dish Name,Category,Meal Type
+Cracked wheat porridge (Meetha daliya),Breakfast,Breakfast
+Semolina porridge (Suji/Rava daliya),Breakfast,Breakfast
+Oatmeal Porridge,Breakfast,Breakfast
+Cornflakes with milk,Breakfast,Breakfast
+Rice flakes (Chiwda/Aval),Breakfast,Breakfast
+Wheat flakes,Breakfast,Breakfast
+Boiled egg (Ubla anda),Breakfast,Breakfast
+Scrambled egg (Ande ki bhurji),Breakfast,Breakfast
+Plain omelette/omlet,Breakfast,Breakfast
+Stuffed egg omelette/omlet,Breakfast,Breakfast
+Pancake,Breakfast,Breakfast
+Vegetable pancake,Breakfast,Breakfast
+Jam and fruit pancake,Breakfast,Breakfast
+Chapati/Roti,Breakfast,Breakfast
+Plain parantha/paratha,Breakfast,Breakfast
+Potato parantha/paratha (Aloo ka parantha/paratha),Breakfast,Breakfast
+Radish parantha/paratha (Mooli ka parantha/paratha),Breakfast,Breakfast
+Cauliflower parantha/paratha (Phoolgobhi ka parantha/paratha),Breakfast,Breakfast
+Dal parantha/paratha,Breakfast,Breakfast
+Pea parantha/paratha (Matar ka parantha/paratha),Breakfast,Breakfast
+Paneer parantha/paratha,Breakfast,Breakfast
+Methi parantha/paratha,Breakfast,Breakfast
+Idli,Breakfast,Breakfast
+Instant idli (with semolina),Breakfast,Breakfast
+Semolina idli (Suji/Rava idli),Breakfast,Breakfast
+Masala dosa,Breakfast,Breakfast
+Plain dosa,Breakfast,Breakfast
+Semolina dosa (Suji/Rava dosa),Breakfast,Breakfast
+Uttapam,Breakfast,Breakfast
+Onion tomato uttapam,Breakfast,Breakfast
+Appam,Breakfast,Breakfast
+Rice puttu (Ari puttu),Breakfast,Breakfast
+Poha,Breakfast,Breakfast
+Vegetable poha,Breakfast,Breakfast
+Semolina upma (Suji/Rava upma),Breakfast,Breakfast
+Vegetable upma,Breakfast,Breakfast
+Vermicelli upma (Semiya/Seviyan upma),Breakfast,Breakfast
+Rice upma,Breakfast,Breakfast
+Bread upma,Breakfast,Breakfast
+Moong bean dosa (Pesarattu),Breakfast,Breakfast
+Gram flour chilla/cheela (Besan chilla/cheela),Breakfast,Breakfast
+Moong dal stuffed cheela/chilla (Moong dal ka cheela/chilla),Breakfast,Breakfast
+Paneer stuffed cheela/chilla,Breakfast,Breakfast
+Gram flour and semolina chilla/cheela/savory pancake (Besan suji chilla/cheela),Breakfast,Breakfast
+Rice moong dal cheela (Chawal aur moong dal ka cheela),Breakfast,Breakfast
+Puffy omelette/omlet,Breakfast,Breakfast
+Rice flakes and roasted channa,Breakfast,Breakfast
+Boiled rice (Uble chawal),Rice and Grains,Lunch
+Plain pulao,Rice and Grains,Lunch
+Mixed vegetable pulao,Rice and Grains,Lunch
+Mushroom pulao,Rice and Grains,Lunch
+Sprouted moong pulao,Rice and Grains,Lunch
+Paneer pulao,Rice and Grains,Lunch
+Peas pulao (Matar pulao),Rice and Grains,Lunch
+Cumin pulao (Jeera/Zeera pulao),Rice and Grains,Lunch
+Vegetable biryani/biriyani,Rice and Grains,Lunch
+"Lemon rice (Pulihora, Elumichai sadam, Chitranna)",Rice and Grains,Lunch
+Curd rice (Dahi bhaat/Dahi chawal/ Perugu annam/Daddojanam/Thayir saadam),Rice and Grains,Lunch
+Tamarind rice (Chintapandu pulihora/Puliyodharai/Puli sadam/Huli anna),Rice and Grains,Lunch
+Eggplant/Brinjal rice (Vangi bhat),Rice and Grains,Lunch
+Plain khitchdi (Plain khichri/khichdi),Rice and Grains,Lunch
+Vegetable khichdi/khichri,Rice and Grains,Lunch
+Spinach khichri (Palak khichri/khichdi),Rice and Grains,Lunch
+Quinoa khichdi/khichri,Rice and Grains,Lunch
+Cracked wheat khichri/khichdi (Dalia khichri/khichdi),Rice and Grains,Lunch
+Sweet rice (Meethe chawal),Rice and Grains,Lunch
+Rice dal porridge (Chawal dal ki khichdi/khichri),Rice and Grains,Lunch
+Namkeen daliya,Rice and Grains,Breakfast
+Sprouted moong daliya,Rice and Grains,Breakfast
+Vermicelli porridge (Semiya/Seviyan porridge),Rice and Grains,Breakfast
+Maize porridge,Rice and Grains,Breakfast
+Pearl millet infant food (Bajra shishu aahaar),Millets,Breakfast
+Pearl millet ladoo (Bajra ladoo),Millets,Snack
+Pearl millet mathri (Bajra mathri),Millets,Snack
+Finger millet biscuit (Ragi biscuit),Millets,Snack
+Finger millet cake (Ragi cake),Millets,Snack
+Soya roti,Millets,Lunch
+Makki ki roti,Millets,Lunch
+Jowar dosa,Millets,Breakfast
+Paushtik roti,Millets,Lunch
+Cereal mix,Millets,Breakfast
+Pulse mix,Millets,Breakfast
+Cereal pulse mix with amylase rice flour,Millets,Breakfast
+Poshtik khichdi/khichri,Millets,Lunch
+Washed moong dal (Dhuli moong ki dal),Dal and Pulses,Lunch
+Washed urad dal (Dhuli urad ki dal),Dal and Pulses,Lunch
+Split bengal gram dal (Channa dal),Dal and Pulses,Lunch
+Whole moong (Moong ki dal),Dal and Pulses,Lunch
+Whole masoor (Masoor ki dal),Dal and Pulses,Lunch
+Whole moth (Moth ki dal),Dal and Pulses,Lunch
+Whole urad (Urad ki dal),Dal and Pulses,Lunch
+Mixed dal,Dal and Pulses,Lunch
+Dal moong,Dal and Pulses,Lunch
+Sour lentils (Khatti dal),Dal and Pulses,Lunch
+Arhar with spinach (Arhar dal aur palak),Dal and Pulses,Lunch
+Moong dal with vadi,Dal and Pulses,Lunch
+Green gram whole with baghar (Sabut moong dal with tadka),Dal and Pulses,Lunch
+Kabuli channa curry,Dal and Pulses,Lunch
+Black channa curry/Bengal gram curry (Kale chane ki curry),Dal and Pulses,Lunch
+Chickpeas curry (Safed channa curry),Dal and Pulses,Lunch
+Kidney bean curry (Rajmah curry),Dal and Pulses,Lunch
+Lobia curry,Dal and Pulses,Lunch
+Soyabean curry,Dal and Pulses,Lunch
+Horsegram dal (Kulthi dal),Dal and Pulses,Lunch
+Panchmel dal,Dal and Pulses,Lunch
+Dal makhani,Dal and Pulses,Lunch
+Dalma,Dal and Pulses,Lunch
+Dal dhokli,Dal and Pulses,Lunch
+Lentil soup,Dal and Pulses,Lunch
+Split bengal gram with bottle gourd (Channa dal with ghiya/lauki),Dal and Pulses,Lunch
+Carrot and fenugreek leaves (Gajar methi),Vegetables,Lunch
+Potato cauliflower (Aloo gobhi),Vegetables,Lunch
+Potato capsicum (Shimla mirch aloo),Vegetables,Lunch
+Cabbage and peas (Pattagobhi aur matar),Vegetables,Lunch
+Potato fenugreek (Aloo methi),Vegetables,Lunch
+Brinjal bhartha (Baingan ka bhartha),Vegetables,Lunch
+Dry potato (Sookhe aloo),Vegetables,Lunch
+Beans with coconut (Nariyal aur sem/phali; Beans thoran),Vegetables,Lunch
+Cauliflower with coconut (Nariyal ke saath phoolgobhi),Vegetables,Lunch
+Stuffed okra (Bharwa bhindi),Vegetables,Lunch
+Stuffed capsicum (Bharwa shimla mirch),Vegetables,Lunch
+Stuffed tomatoes (Bharwa tamatar),Vegetables,Lunch
+Pea potato curry (Aloo matar),Vegetables,Lunch
+Pea curry (Matar ki sabzi),Vegetables,Lunch
+Pea mushroom curry (Matar mushroom),Vegetables,Lunch
+Spinach paneer (Palak paneer),Vegetables,Lunch
+Sarson ka saag,Vegetables,Lunch
+Avial,Vegetables,Lunch
+Jackfruit sabzi (Kathal ki sabzi),Vegetables,Lunch
+Potato curry (Aloo ki sabzi),Vegetables,Lunch
+Spinach and potato (Palak aloo),Vegetables,Lunch
+Okra/Lady's fingers fry (Bhindi sabzi/sabji/subji),Vegetables,Lunch
+Vegetables stir fry,Vegetables,Lunch
+Vegetable jalfrezi,Vegetables,Lunch
+Bottle gourd soup (Ghiya/Lauki soup),Vegetables,Lunch
+Pumpkin soup,Vegetables,Lunch
+Sweet corn soup,Vegetables,Lunch
+Mixed vegetable soup,Vegetables,Lunch
+Vegetable stock,Vegetables,Lunch
+Fruit salad (Phalon ka salaad),Fruits,Snack
+Carrot apple sandwich (Gajar aur seb ka sandwich),Fruits,Snack
+Banana groundnut paste/puree,Fruits,Snack
+Mashed banana with milk,Fruits,Snack
+Stewed apple,Fruits,Snack
+Stewed apple with custard,Fruits,Snack
+Apple and honey sorbet (Seb aur shehad ka sharbat),Fruits,Snack
+Jellied sunshine fruit salad,Fruits,Snack
+Frozen frosty fruit salad (Phalon ka salaad),Fruits,Snack
+Apple kheer (Seb ki kheer),Fruits,Snack
+Banana raita (Kele ka raita),Fruits,Snack
+Mango raita (Aam ka raita),Fruits,Snack
+Guava raita (Amarood ka raita),Fruits,Snack
+Grapes raita (Angoor ka raita),Fruits,Snack
+Fruit puree tart,Fruits,Snack
+Apple banana pie,Fruits,Snack
+Mango milkshake (Aam milkshake),Fruits,Beverage
+Banana milkshake (Kele milkshake),Fruits,Beverage
+Lassi (salted),Dairy,Beverage
+Sweet Lassi (Meethi lassi),Dairy,Beverage
+Saffron milk (Kesariya doodh),Dairy,Beverage
+Hot cocoa,Dairy,Beverage
+Paneer curry,Dairy,Lunch
+Paneer kofta curry,Dairy,Lunch
+Shahi paneer,Dairy,Lunch
+Paneer in butter sauce,Dairy,Lunch
+Methi malai paneer,Dairy,Lunch
+Kadhai Paneer,Dairy,Lunch
+Pea paneer curry (Matar paneer),Dairy,Lunch
+Cheese and chilli sandwich,Dairy,Breakfast
+Cheese and tomato sandwich (toasted) (Cheese aur tamatar ke sandwich (toasted)),Dairy,Snack
+Paneer kheer,Dairy,Snack
+Rice kheer (Chawal ki kheer),Dairy,Snack
+Makhana kheer,Dairy,Snack
+Vermicelli kheer (Semiya/Seviyan ki kheer),Dairy,Snack
+Semolina kheer (Suji/Rava kheer),Dairy,Snack
+Soft Custard (stirred),Dairy,Snack
+Baked custard,Dairy,Snack
+Mixed pulse and vegetable salad,Legumes,Snack
+Sprouted moong salad,Legumes,Snack
+Sprouted moong dal chat,Legumes,Snack
+Sprouted moong raita,Legumes,Snack
+Sprouted moong parantha/paratha,Legumes,Breakfast
+Sprouted moong poha,Legumes,Breakfast
+Sprouts upma,Legumes,Breakfast
+Peanut and tomato sandwich (Moongfali aur tamatar ka sandwich),Legumes,Snack
+Peanut raita (Mungfali ka raita),Legumes,Snack
+Peanut chutney (Mungfali ki chutney),Legumes,Snack
+Peanut cutlet (Mungfali ke cutlet),Legumes,Snack
+Spinach chickpeas cutlet (Palak channa dal cutlet),Legumes,Snack
+Black channa pulao/ Bengal gram pulao (Kale chane ka pulao),Legumes,Lunch
+Split bengal gram dal and vegetable pulao (Channa dal and vegetable pulao),Legumes,Lunch
+Soyabean tikki,Legumes,Snack
+Soya chunks and peas (Nutrinugget matar),Legumes,Lunch
+Soya chunks korma (Nutrinugget korma),Legumes,Lunch
+Soya chunks sweet and sour (Nutrinugget sweet and sour),Legumes,Lunch
+Chicken curry,Common Indian Meals,Lunch
+Tandoori chicken,Common Indian Meals,Lunch
+Butter chicken,Common Indian Meals,Lunch
+Chicken kebab,Common Indian Meals,Lunch
+Fish curry (Machli curry),Common Indian Meals,Lunch
+Fish tikka,Common Indian Meals,Lunch
+Tandoori fish,Common Indian Meals,Lunch
+Sambar,Common Indian Meals,Lunch
+Rasam with tamarind (Puli rasam/ Chintapandu rasam/ Charu/Saaru),Common Indian Meals,Lunch
+Rasam with lemon (Nimmakaya rasam/Nimmakaya charu/Elumichai rasam/Nimbe hannina saaru),Common Indian Meals,Lunch
+Pav bhaji,Common Indian Meals,Lunch
+Dhokla,Common Indian Meals,Snack
+Khaman (dhokla),Common Indian Meals,Snack
+Instant dhokla,Common Indian Meals,Snack
+Gujarati handvo,Common Indian Meals,Snack
+Methi thepla,Common Indian Meals,Breakfast
+Masala vada,Common Indian Meals,Snack
+Plain urad dal vada (Uzunne vada/Minapa garelu/Ulundu vadai/Medu vada),Common Indian Meals,Snack
+Masala urad dal vada,Common Indian Meals,Snack
+Vegetable samosa,Common Indian Meals,Snack
+Potato samosa (Aloo ka samosa),Common Indian Meals,Snack
+Paneer and pea samosa (Paneer matar ka samosa),Common Indian Meals,Snack
+Vegetable cutlet,Common Indian Meals,Snack
+Paneer potato cutlet (Paneer aloo cutlet),Common Indian Meals,Snack
+Rice murukku,Healthy Snacks,Snack
+Bhel puri,Healthy Snacks,Snack
+Khakhra,Healthy Snacks,Snack
+Khakhra chaat,Healthy Snacks,Snack
+Peanut brittle (Moongfali ki chikki),Healthy Snacks,Snack
+Murmura chikki,Healthy Snacks,Snack
+Vegetarian club sandwich,Healthy Snacks,Snack
+Flattened rice cutlet (Chirwa cutlet/Chivda cutlet/Poha cutlet),Healthy Snacks,Snack
+Cheese toast,Healthy Snacks,Snack
+Boondi raita,Healthy Snacks,Snack
+Tossed salad,Healthy Snacks,Snack
+Mixed vegetable salad with curd sauce,Healthy Snacks,Snack
+Carrot and spinach raita (Gajar aur palak ka raita),Healthy Snacks,Snack
+Pineapple milkshake (Ananas milkshake),Beverages,Beverage
+Orange milkshake (Narangi milkshake),Beverages,Beverage
+Lemonade,Beverages,Beverage
+Raw mango drink (Aam panna),Beverages,Beverage
+Cumin infused water (Jeere/Zeere ka pani),Beverages,Beverage
+Jal jeera,Beverages,Beverage
+Sattu drink,Beverages,Beverage
+Thandai,Beverages,Beverage
+Woodapple juice (Bel ka sharbat),Beverages,Beverage
+Cucumber sharbat (Kheere ka sharbat),Beverages,Beverage
+Nannari sharbat,Beverages,Beverage
+Lemon squash (Nimbu ka squash),Beverages,Beverage
+Orange squash (Santre ka squash),Beverages,Beverage
+Hot tea (Garam Chai),Beverages,Beverage
+Kashmiri tea (Kehwa),Beverages,Beverage
+Instant coffee,Beverages,Beverage
+Steeped hot coffee,Beverages,Beverage
+Buttermilk biscuit,Other Common Foods,Snack
+Paneer kaathi roll,Other Common Foods,Lunch
+Chicken sandwich,Other Common Foods,Lunch
+Tomato and cucumber sandwich (Tamatar aur kheere ka sandwich),Other Common Foods,Snack
+Egg sandwich (Ande ka sandwich),Other Common Foods,Breakfast
+Vegetable chowmein,Other Common Foods,Lunch
+Chicken chowmein,Other Common Foods,Lunch
+Pasta hot pot,Other Common Foods,Lunch
+Classic italian pasta,Other Common Foods,Lunch
+Spaghetti with paneer balls and tomato sauce,Other Common Foods,Lunch
+Vegetable burger,Other Common Foods,Lunch
+Cheese pizza,Other Common Foods,Lunch
+Spring roll,Other Common Foods,Snack
+Potato pakora/pakoda (Aloo pakoda),Other Common Foods,Snack
+Onion pakora/pakoda (Pyaaz ke pakode),Other Common Foods,Snack
+Mixed vegetable pakora/pakoda,Other Common Foods,Snack
+Paneer pakora/pakoda,Other Common Foods,Snack
+Banana chips (Kele ke chips),Other Common Foods,Snack
+Dahi vadas/Dahi bhalla,Other Common Foods,Snack
+Potato chips,Snacks,Snack
+Cream biscuits,Snacks,Snack
+Milk chocolate,Sweets,Snack
+Hard candy,Sweets,Snack
+Cola soft drink,Beverages,Snack
+Instant noodles,Convenience foods,Lunch
+Fried samosa,Snacks,Snack
+Sweetened breakfast cereal,Packaged foods,Breakfast
+French fries,Snacks,Snack
+Chocolate sandwich cookies,Snacks,Snack
+Plain potato crisps,Snacks,Snack
+Sweetened fruit drink,Beverages,Snack
+Baked vegetables,Vegetables,Lunch
