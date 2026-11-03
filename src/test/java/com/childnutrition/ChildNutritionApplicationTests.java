@@ -20,7 +20,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
-class ChildNutritionApplicationTests {
+class oChildNutritionApplicationTests {
 
     @Autowired MockMvc mvc;
     @Autowired ObjectMapper objectMapper;
@@ -33,7 +33,8 @@ class ChildNutritionApplicationTests {
         mvc.perform(get("/login.html")).andExpect(status().isOk());
         mvc.perform(get("/register.html")).andExpect(status().isOk());
         mvc.perform(get("/js/app.js")).andExpect(status().isOk());
-        mvc.perform(get("/api/foods")).andExpect(status().isForbidden());
+        mvc.perform(get("/api/foods")).andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.message").value("Authentication is required or the session has expired."));
     }
 
     @BeforeEach
@@ -174,10 +175,10 @@ class ChildNutritionApplicationTests {
                             .content("{\"mealDate\":\"" + day + "\",\"mealType\":\"Snack\",\"foodId\":" + foodId + ",\"quantity\":50}"))
                     .andExpect(status().isCreated()).andExpect(jsonPath("$.foodName").value(name))
                     .andExpect(jsonPath("$.quantity").value(50))
-                    .andExpect(jsonPath("$.calories").value(((Number) values.get("calories")).doubleValue() / 2))
-                    .andExpect(jsonPath("$.protein").value(((Number) values.get("protein")).doubleValue() / 2))
-                    .andExpect(jsonPath("$.carbohydrates").value(((Number) values.get("carbohydrates")).doubleValue() / 2))
-                    .andExpect(jsonPath("$.fat").value(((Number) values.get("fat")).doubleValue() / 2))
+                    .andExpect(jsonPath("$.calories").value(round2(((Number) values.get("calories")).doubleValue() / 2)))
+                    .andExpect(jsonPath("$.protein").value(round2(((Number) values.get("protein")).doubleValue() / 2)))
+                    .andExpect(jsonPath("$.carbohydrates").value(round2(((Number) values.get("carbohydrates")).doubleValue() / 2)))
+                    .andExpect(jsonPath("$.fat").value(round2(((Number) values.get("fat")).doubleValue() / 2)))
                     .andReturn().getResponse().getContentAsString();
             long mealId = objectMapper.readTree(response).get("id").asLong();
             var mealNode = objectMapper.readTree(response);
@@ -240,6 +241,9 @@ class ChildNutritionApplicationTests {
         mvc.perform(post("/api/foods/custom").header("Authorization", "Bearer " + token)
                         .contentType(MediaType.APPLICATION_JSON).content(customJson.replace("\"sugar\":25", "\"sugar\":-1")))
                 .andExpect(status().isBadRequest());
+        mvc.perform(post("/api/foods/custom").header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON).content(customJson.replace("Family smoothie test", "Impossible smoothie test").replace("\"servingSize\":250", "\"servingSize\":10").replace("\"servingUnit\":\"ml\"", "\"servingUnit\":\"g\"")))
+                .andExpect(status().isBadRequest()).andExpect(jsonPath("$.message").value(org.hamcrest.Matchers.containsString("cannot exceed the label serving weight")));
         mvc.perform(get("/api/foods/search").param("q", "Family smoothie test").header("Authorization", "Bearer " + otherToken))
                 .andExpect(status().isOk()).andExpect(jsonPath("$").isEmpty());
         mvc.perform(post("/api/foods/custom").header("Authorization", "Bearer " + otherToken)
@@ -272,6 +276,225 @@ class ChildNutritionApplicationTests {
                 .andExpect(jsonPath("$[?(@.alertType == 'SATURATED_FAT_ABOVE_GUIDANCE')]").isEmpty());
     }
 
+    @Test
+    void growthMeasurementsValidateUnitsAgeAndCalculateBmiServerSide() throws Exception {
+        String token = register("growth-" + UUID.randomUUID().toString().substring(0, 8) + "@example.test");
+        LocalDate day = LocalDate.now();
+        String profile = mvc.perform(post("/api/children").header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"name\":\"Mira\",\"dateOfBirth\":\"" + day.minusYears(5) + "\",\"gender\":\"female\"}"))
+                .andExpect(status().isCreated()).andReturn().getResponse().getContentAsString();
+        long childId = objectMapper.readTree(profile).get("id").asLong();
+        String endpoint = "/api/children/" + childId + "/growth";
+        String valid = "{\"recordDate\":\"" + day + "\",\"heightCm\":100,\"weightKg\":15}";
+        mvc.perform(post(endpoint).header("Authorization", "Bearer " + token).contentType(MediaType.APPLICATION_JSON).content(valid))
+                .andExpect(status().isCreated()).andExpect(jsonPath("$.bmi").value(15.00));
+
+        for (String bad : List.of(
+                "{\"recordDate\":\"" + day + "\",\"weightKg\":15}",
+                "{\"recordDate\":\"" + day + "\",\"heightCm\":100}",
+                "{\"recordDate\":\"" + day + "\",\"heightCm\":null,\"weightKg\":15}",
+                "{\"recordDate\":\"" + day + "\",\"heightCm\":100,\"weightKg\":null}",
+                "{\"recordDate\":\"" + day + "\",\"heightCm\":0,\"weightKg\":15}",
+                "{\"recordDate\":\"" + day + "\",\"heightCm\":100,\"weightKg\":-2}",
+                "{\"recordDate\":\"" + day + "\",\"heightCm\":1.2,\"weightKg\":15}",
+                "{\"recordDate\":\"" + day + "\",\"heightCm\":100,\"weightKg\":15000}",
+                "{\"recordDate\":\"" + day + "\",\"heightCm\":170,\"weightKg\":15}",
+                "{\"recordDate\":\"" + day + "\",\"heightCm\":9999,\"weightKg\":15}",
+                "{\"recordDate\":\"" + day + "\",\"heightCm\":\"not-a-number\",\"weightKg\":15}")) {
+            mvc.perform(post(endpoint).header("Authorization", "Bearer " + token).contentType(MediaType.APPLICATION_JSON).content(bad))
+                    .andExpect(status().isBadRequest());
+        }
+        org.junit.jupiter.api.Assertions.assertEquals(1, jdbc.queryForObject("select count(*) from growth_records where child_id = ?", Integer.class, childId),
+                "Invalid API submissions must not be persisted");
+        // A plausible high BMI is confirmable; the original values remain unchanged.
+        String candidate = "{\"recordDate\":\"" + day + "\",\"heightCm\":100,\"weightKg\":30}";
+        String challenge = mvc.perform(post(endpoint).header("Authorization", "Bearer " + token).contentType(MediaType.APPLICATION_JSON).content(candidate))
+                .andExpect(status().isConflict()).andExpect(jsonPath("$.code").value("CONFIRMATION_REQUIRED"))
+                .andExpect(jsonPath("$.previous.heightCm").value(100.00)).andReturn().getResponse().getContentAsString();
+        String confirmation = objectMapper.readTree(challenge).get("confirmationToken").asText();
+        String confirmed = "{\"recordDate\":\"" + day + "\",\"heightCm\":100,\"weightKg\":30,\"confirmationToken\":\"" + confirmation + "\"}";
+        mvc.perform(post(endpoint).header("Authorization", "Bearer " + token).contentType(MediaType.APPLICATION_JSON).content(confirmed))
+                .andExpect(status().isCreated()).andExpect(jsonPath("$.bmi").value(30.00));
+    }
+
+    @Test
+    void suspiciousSameDayMeasurementRequiresConfirmationAndStaleChallengeIsRejected() throws Exception {
+        String token = register("growth-confirm-" + UUID.randomUUID().toString().substring(0, 8) + "@example.test");
+        LocalDate day = LocalDate.now();
+        String profile = mvc.perform(post("/api/children").header("Authorization", "Bearer " + token).contentType(MediaType.APPLICATION_JSON)
+                .content("{\"name\":\"Growth Child\",\"dateOfBirth\":\"" + day.minusYears(5) + "\",\"gender\":\"female\"}"))
+                .andExpect(status().isCreated()).andReturn().getResponse().getContentAsString();
+        String endpoint = "/api/children/" + objectMapper.readTree(profile).get("id").asLong() + "/growth";
+        String initial = "{\"recordDate\":\"" + day + "\",\"heightCm\":99,\"weightKg\":20}";
+        mvc.perform(post(endpoint).header("Authorization", "Bearer " + token).contentType(MediaType.APPLICATION_JSON).content(initial)).andExpect(status().isCreated());
+        String suspicious = "{\"recordDate\":\"" + day + "\",\"heightCm\":98,\"weightKg\":14}";
+        String challenge = mvc.perform(post(endpoint).header("Authorization", "Bearer " + token).contentType(MediaType.APPLICATION_JSON).content(suspicious))
+                .andExpect(status().isConflict()).andExpect(jsonPath("$.code").value("CONFIRMATION_REQUIRED"))
+                .andExpect(jsonPath("$.message").value(org.hamcrest.Matchers.containsString("99 cm and 20 kg")))
+                .andReturn().getResponse().getContentAsString();
+        org.junit.jupiter.api.Assertions.assertEquals(1, jdbc.queryForObject("select count(*) from growth_records", Integer.class));
+        String confirmation = objectMapper.readTree(challenge).get("confirmationToken").asText();
+        mvc.perform(post(endpoint).header("Authorization", "Bearer " + token).contentType(MediaType.APPLICATION_JSON)
+                .content("{\"recordDate\":\"" + day + "\",\"heightCm\":98,\"weightKg\":14,\"confirmationToken\":\"" + confirmation + "\"}"))
+                .andExpect(status().isCreated()).andExpect(jsonPath("$.heightCm").value(98)).andExpect(jsonPath("$.weightKg").value(14))
+                .andExpect(jsonPath("$.bmi").value(14.58));
+        mvc.perform(get(endpoint).header("Authorization", "Bearer " + token)).andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].heightCm").value(98)).andExpect(jsonPath("$[1].heightCm").value(99));
+        String refreshed = mvc.perform(get(endpoint).header("Authorization", "Bearer " + token)).andReturn().getResponse().getContentAsString();
+        long latestId = objectMapper.readTree(refreshed).get(0).get("id").asLong();
+        String staleCandidate = "{\"recordDate\":\"" + day + "\",\"heightCm\":98,\"weightKg\":20}";
+        String newChallenge = mvc.perform(post(endpoint).header("Authorization", "Bearer " + token).contentType(MediaType.APPLICATION_JSON).content(staleCandidate))
+                .andExpect(status().isConflict()).andReturn().getResponse().getContentAsString();
+        String staleToken = objectMapper.readTree(newChallenge).get("confirmationToken").asText();
+        jdbc.update("update growth_records set weight_kg = 14.5 where id = ?", latestId);
+        mvc.perform(post(endpoint).header("Authorization", "Bearer " + token).contentType(MediaType.APPLICATION_JSON)
+                .content("{\"recordDate\":\"" + day + "\",\"heightCm\":98,\"weightKg\":20,\"confirmationToken\":\"" + staleToken + "\"}"))
+                .andExpect(status().isConflict()).andExpect(jsonPath("$.code").value("CONFIRMATION_STALE"));
+        org.junit.jupiter.api.Assertions.assertEquals(2, jdbc.queryForObject("select count(*) from growth_records", Integer.class));
+    }
+
+    @Test
+    void normalGrowthTrendSavesAndAnotherParentsChildIsNotAccessible() throws Exception {
+        LocalDate today = LocalDate.now();
+        String first = register("trend-a-" + UUID.randomUUID().toString().substring(0, 8) + "@example.test");
+        String second = register("trend-b-" + UUID.randomUUID().toString().substring(0, 8) + "@example.test");
+        String profile = mvc.perform(post("/api/children").header("Authorization", "Bearer " + first).contentType(MediaType.APPLICATION_JSON)
+                .content("{\"name\":\"Trend Child\",\"dateOfBirth\":\"" + today.minusYears(5) + "\",\"gender\":\"male\"}"))
+                .andExpect(status().isCreated()).andReturn().getResponse().getContentAsString();
+        String endpoint = "/api/children/" + objectMapper.readTree(profile).get("id").asLong() + "/growth";
+        mvc.perform(post(endpoint).header("Authorization", "Bearer " + first).contentType(MediaType.APPLICATION_JSON)
+                .content("{\"recordDate\":\"" + today.minusDays(90) + "\",\"heightCm\":110,\"weightKg\":18}"))
+                .andExpect(status().isCreated());
+        mvc.perform(post(endpoint).header("Authorization", "Bearer " + first).contentType(MediaType.APPLICATION_JSON)
+                .content("{\"recordDate\":\"" + today + "\",\"heightCm\":111,\"weightKg\":19}"))
+                .andExpect(status().isCreated()).andExpect(jsonPath("$.bmi").value(15.42));
+        mvc.perform(get(endpoint).header("Authorization", "Bearer " + second)).andExpect(status().isNotFound());
+        mvc.perform(post(endpoint).header("Authorization", "Bearer " + second).contentType(MediaType.APPLICATION_JSON)
+                .content("{\"recordDate\":\"" + today + "\",\"heightCm\":111,\"weightKg\":19}"))
+                .andExpect(status().isNotFound());
+        org.junit.jupiter.api.Assertions.assertEquals(2, jdbc.queryForObject("select count(*) from growth_records", Integer.class));
+    }
+
+    @Test
+    void foodPortionsAssistantSourcesAndChildAuthorizationAreConsistent() throws Exception {
+        String token = register("guide-" + UUID.randomUUID().toString().substring(0, 8) + "@example.test");
+        String foods = mvc.perform(get("/api/foods/search").param("q", "Hot tea").header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk()).andExpect(jsonPath("$[0].nutritionBasis").value("per 100 g"))
+                .andExpect(jsonPath("$[0].dataQuality").isNotEmpty()).andReturn().getResponse().getContentAsString();
+        long foodId = objectMapper.readTree(foods).get(0).get("id").asLong();
+        mvc.perform(get("/api/foods/{id}/portion", foodId).param("amount", "50").header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.amount").value(50))
+                .andExpect(jsonPath("$.nutrients.caloriesKcal").value(8.07));
+        mvc.perform(get("/api/foods/{id}/portion", foodId).param("amount", "0").header("Authorization", "Bearer " + token))
+                .andExpect(status().isBadRequest());
+        mvc.perform(post("/api/nutrition-assistant/ask").header("Authorization", "Bearer " + token).contentType(MediaType.APPLICATION_JSON)
+                .content("{\"question\":\"What does protein do?\",\"history\":[{\"role\":\"user\",\"content\":\"Explain nutrition terms.\"}]}"))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.answer").value(org.hamcrest.Matchers.containsString("grow and repair")))
+                .andExpect(jsonPath("$.references[0].url").value(org.hamcrest.Matchers.containsString("nin.res.in")))
+                .andExpect(jsonPath("$.suggestions").isArray()).andExpect(jsonPath("$.answerMode").value("database"));
+        mvc.perform(post("/api/nutrition-assistant/ask").header("Authorization", "Bearer " + token).contentType(MediaType.APPLICATION_JSON)
+                .content("{\"question\":\"   \"}"))
+                .andExpect(status().isBadRequest());
+        String other = register("guide-other-" + UUID.randomUUID().toString().substring(0, 8) + "@example.test");
+        String profile = mvc.perform(post("/api/children").header("Authorization", "Bearer " + token).contentType(MediaType.APPLICATION_JSON)
+                .content("{\"name\":\"Private child\",\"dateOfBirth\":\"2020-01-01\",\"gender\":\"female\"}"))
+                .andExpect(status().isCreated()).andReturn().getResponse().getContentAsString();
+        long childId=objectMapper.readTree(profile).get("id").asLong();
+        mvc.perform(post("/api/nutrition-assistant/ask").header("Authorization", "Bearer " + other).contentType(MediaType.APPLICATION_JSON)
+                .content("{\"question\":\"Which nutrients are missing today?\",\"childId\":" + childId + "}"))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void dailyNutritionReportUsesMealSnapshotsAndRecalculatesAfterEditsAndDeletes() throws Exception {
+        String token=register("report-"+UUID.randomUUID().toString().substring(0,8)+"@example.test"); LocalDate day=LocalDate.now();
+        String profile=mvc.perform(post("/api/children").header("Authorization","Bearer "+token).contentType(MediaType.APPLICATION_JSON)
+                .content("{\"name\":\"Report Child\",\"dateOfBirth\":\"2020-01-01\",\"gender\":\"female\"}"))
+                .andExpect(status().isCreated()).andReturn().getResponse().getContentAsString();
+        long childId=objectMapper.readTree(profile).get("id").asLong(); String base="/api/children/"+childId;
+        String foodResponse=mvc.perform(get("/api/foods/search").param("q","Hot tea").header("Authorization","Bearer "+token)).andReturn().getResponse().getContentAsString();
+        long foodId=objectMapper.readTree(foodResponse).get(0).get("id").asLong();
+        String meal=mvc.perform(post(base+"/meals").header("Authorization","Bearer "+token).contentType(MediaType.APPLICATION_JSON)
+                .content("{\"mealDate\":\""+day+"\",\"mealType\":\"Breakfast\",\"foodId\":"+foodId+",\"quantity\":50}"))
+                .andExpect(status().isCreated()).andReturn().getResponse().getContentAsString();
+        long mealId=objectMapper.readTree(meal).get("id").asLong();
+        mvc.perform(get(base+"/reports/daily").param("date",day.toString()).header("Authorization","Bearer "+token))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.nutrients[0].actual").value(8.07))
+                .andExpect(jsonPath("$.nutrients[0].reference").doesNotExist())
+                .andExpect(jsonPath("$.nutrients[0].percentReached").doesNotExist())
+                .andExpect(jsonPath("$.incomplete").value(true))
+                .andExpect(jsonPath("$.nutrients[7].complete").value(false))
+                .andExpect(jsonPath("$.nutrients[7].possibleGap").value(false))
+                .andExpect(jsonPath("$.mealBreakdown[0].mealType").value("Breakfast"));
+        mvc.perform(get(base+"/reports/daily").param("date",day.minusDays(1).toString()).header("Authorization","Bearer "+token))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.nutrients[0].actual").value(0));
+        mvc.perform(put(base+"/meals/"+mealId).header("Authorization","Bearer "+token).contentType(MediaType.APPLICATION_JSON)
+                .content("{\"mealDate\":\""+day+"\",\"mealType\":\"Lunch\",\"foodId\":"+foodId+",\"quantity\":100}"))
+                .andExpect(status().isOk());
+        mvc.perform(get(base+"/reports/daily").param("date",day.toString()).header("Authorization","Bearer "+token))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.nutrients[0].actual").value(16.14))
+                .andExpect(jsonPath("$.mealBreakdown[0].mealType").value("Lunch"));
+        mvc.perform(delete(base+"/meals/"+mealId).header("Authorization","Bearer "+token)).andExpect(status().isNoContent());
+        mvc.perform(get(base+"/reports/daily").param("date",day.toString()).header("Authorization","Bearer "+token))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.nutrients[0].actual").value(0))
+                .andExpect(jsonPath("$.mealBreakdown").isEmpty());
+    }
+
+    @Test
+    void sharedValidationErrorsDatesTargetsAndReferencesAreHandledConsistently() throws Exception {
+        String email = "audit-" + UUID.randomUUID().toString().substring(0, 8) + "@example.test";
+        String token = register(email);
+        mvc.perform(post("/api/auth/register").contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"name\":\"Other\",\"email\":\"" + email + "\",\"password\":\"safe-password-123\"}"))
+                .andExpect(status().isConflict()).andExpect(jsonPath("$.message").value("Email is already registered"));
+        mvc.perform(post("/api/auth/register").contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"name\":\"\",\"email\":\"bad\",\"password\":\"short\"}"))
+                .andExpect(status().isBadRequest()).andExpect(jsonPath("$.errors.name").exists())
+                .andExpect(jsonPath("$.errors.email").exists()).andExpect(jsonPath("$.errors.password").exists());
+        mvc.perform(get("/api/children").header("Authorization", "Bearer invalid-token"))
+                .andExpect(status().isUnauthorized()).andExpect(jsonPath("$.errors").isMap());
+        mvc.perform(post("/api/auth/login").contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"email\":\"" + email + "\",\"password\":\"incorrect-password\"}"))
+                .andExpect(status().isUnauthorized()).andExpect(jsonPath("$.message").value("Invalid email or password"));
+        LocalDate day = LocalDate.now();
+        mvc.perform(post("/api/children").header("Authorization", "Bearer " + token).contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"name\":\" \",\"dateOfBirth\":\"" + day.plusDays(1) + "\",\"gender\":\"female\"}"))
+                .andExpect(status().isBadRequest()).andExpect(jsonPath("$.errors.name").exists())
+                .andExpect(jsonPath("$.errors.dateOfBirth").exists());
+        String childJson = mvc.perform(post("/api/children").header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"name\":\"Asha\",\"dateOfBirth\":\"" + day.minusYears(5) + "\",\"gender\":\"female\"}"))
+                .andExpect(status().isCreated()).andReturn().getResponse().getContentAsString();
+        long childId = objectMapper.readTree(childJson).get("id").asLong();
+        mvc.perform(get("/api/children/0/dashboard").header("Authorization", "Bearer " + token))
+                .andExpect(status().isBadRequest()).andExpect(jsonPath("$.message").value("Child ID must be a positive number."));
+        mvc.perform(get("/api/foods/not-a-number").header("Authorization", "Bearer " + token))
+                .andExpect(status().isBadRequest()).andExpect(jsonPath("$.errors").isMap());
+        mvc.perform(get("/api/children/{id}/reports/monthly", childId).header("Authorization", "Bearer " + token).param("month", "2026-13"))
+                .andExpect(status().isBadRequest()).andExpect(jsonPath("$.message").value("Month must use YYYY-MM format."));
+        mvc.perform(post("/api/children/{id}/nutrition-targets", childId).header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"ageGroup\":\"unknown\",\"calorieTarget\":0,\"proteinTarget\":0,\"carbohydrateTarget\":0,\"fatTarget\":0}"))
+                .andExpect(status().isBadRequest()).andExpect(jsonPath("$.errors.ageGroup").exists());
+        String target = "{\"ageGroup\":\"4-8\",\"calorieTarget\":0,\"proteinTarget\":0,\"carbohydrateTarget\":0,\"fatTarget\":0}";
+        mvc.perform(post("/api/children/{id}/nutrition-targets", childId).header("Authorization", "Bearer " + token).contentType(MediaType.APPLICATION_JSON).content(target))
+                .andExpect(status().isCreated());
+        org.junit.jupiter.api.Assertions.assertThrows(org.springframework.dao.DataIntegrityViolationException.class,
+                () -> jdbc.update("insert into nutrition_targets (child_id, age_group, calorie_target, protein_target, carbohydrate_target, fat_target, created_at, updated_at) values (99999999, '4-8', 0, 0, 0, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)"));
+        mvc.perform(post("/api/children/{id}/nutrition-targets", childId).header("Authorization", "Bearer " + token).contentType(MediaType.APPLICATION_JSON).content(target))
+                .andExpect(status().isConflict()).andExpect(jsonPath("$.message").value("A nutrition target already exists for this age group."));
+        mvc.perform(post("/api/children/{id}/meals", childId).header("Authorization", "Bearer " + token).contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"mealDate\":\"" + day.plusDays(1) + "\",\"mealType\":\"Snack\",\"foodId\":1,\"quantity\":1}"))
+                .andExpect(status().isBadRequest()).andExpect(jsonPath("$.errors.mealDate").exists());
+        mvc.perform(post("/api/children/{id}/meals", childId).header("Authorization", "Bearer " + token).contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"mealDate\":\"" + day + "\",\"mealType\":\"Snack\",\"foodId\":1,\"quantity\":0}"))
+                .andExpect(status().isBadRequest()).andExpect(jsonPath("$.errors.quantity").exists());
+        mvc.perform(post("/api/children/{id}/meals", childId).header("Authorization", "Bearer " + token).contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"mealDate\":\"" + day + "\",\"mealType\":\"Snack\",\"foodId\":999999,\"quantity\":1}"))
+                .andExpect(status().isNotFound()).andExpect(jsonPath("$.message").value("Food was not found"));
+    }
+
     private String register(String email) throws Exception {
         String json = mvc.perform(post("/api/auth/register").contentType(MediaType.APPLICATION_JSON)
                         .content("{\"name\":\"Test Parent\",\"email\":\"" + email + "\",\"password\":\"safe-password-123\"}"))
@@ -285,7 +508,6 @@ class ChildNutritionApplicationTests {
         else org.junit.jupiter.api.Assertions.assertEquals(((Number) per100g).doubleValue() / 2,
                 actual.asDouble(), 0.01, field + " should scale from 100 g to the 50 g serving");
     }
+
+    private static double round2(double value) { return java.math.BigDecimal.valueOf(value).setScale(2, java.math.RoundingMode.HALF_UP).doubleValue(); }
 }
-
-
-

@@ -32,6 +32,11 @@ public class FoodNutritionController {
     @GetMapping("/{id}")
     public FoodDtos.Response get(@PathVariable Long id, Authentication auth) { return foods.get(id, auth.getName()); }
 
+    @GetMapping("/{id}/portion")
+    public FoodDtos.PortionResponse portion(@PathVariable Long id, @RequestParam java.math.BigDecimal amount, Authentication auth) {
+        return foods.portion(id, amount, auth.getName());
+    }
+
     @PostMapping("/custom") @org.springframework.web.bind.annotation.ResponseStatus(HttpStatus.CREATED)
     public FoodDtos.Response createCustom(@Valid @RequestBody FoodDtos.CustomRequest request, Authentication auth) {
         return foods.createCustom(request, auth.getName());

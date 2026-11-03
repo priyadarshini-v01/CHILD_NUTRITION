@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import javax.crypto.SecretKey;
 import java.time.Instant;
 import java.util.Date;
+import java.util.Objects;
 
 @Service
 public class JwtService {
@@ -38,6 +39,24 @@ public class JwtService {
     public boolean isValid(String token, String email) {
         try { return email.equals(subject(token)) && claims(token).getExpiration().after(new Date()); }
         catch (RuntimeException ex) { return false; }
+    }
+
+    public String issueGrowthConfirmation(Long childId, String fingerprint) {
+        Instant now = Instant.now();
+        return Jwts.builder().subject("growth-confirmation").claim("purpose", "growth-confirmation")
+                .claim("childId", childId).claim("fingerprint", fingerprint)
+                .issuedAt(Date.from(now)).expiration(Date.from(now.plusSeconds(300))).signWith(key).compact();
+    }
+
+    public boolean isGrowthConfirmationValid(String token, Long childId, String fingerprint) {
+        try {
+            Claims c = claims(token);
+            return "growth-confirmation".equals(c.getSubject())
+                    && "growth-confirmation".equals(c.get("purpose", String.class))
+                    && Objects.equals(String.valueOf(childId), String.valueOf(c.get("childId")))
+                    && Objects.equals(fingerprint, c.get("fingerprint", String.class))
+                    && c.getExpiration().after(new Date());
+        } catch (RuntimeException ex) { return false; }
     }
 
     private Claims claims(String token) {

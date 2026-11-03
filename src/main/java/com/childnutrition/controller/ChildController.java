@@ -47,7 +47,8 @@ public class ChildController {
         return auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
     }
     private static void apply(Child child, ChildDtos.Request request) {
-        child.setName(request.name().trim()); child.setDateOfBirth(request.dateOfBirth()); child.setGender(request.gender());
-        child.setAllergies(request.allergies()); child.setDietaryPreferences(request.dietaryPreferences());
+        child.setName(request.name().trim()); child.setDateOfBirth(request.dateOfBirth()); child.setGender(request.gender().trim());
+        child.setAllergies(request.allergies() == null ? null : request.allergies().trim());
+        child.setDietaryPreferences(request.dietaryPreferences() == null ? null : request.dietaryPreferences().trim());
     }
 }

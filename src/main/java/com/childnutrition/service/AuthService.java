@@ -20,6 +20,8 @@ public class AuthService {
     }
 
     public AuthDtos.AuthResponse register(AuthDtos.RegisterRequest request) {
+        if (request.password().getBytes(java.nio.charset.StandardCharsets.UTF_8).length > 72)
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Password must be 72 UTF-8 bytes or fewer.");
         String email = request.email().trim().toLowerCase();
         if (users.existsByEmail(email)) throw new ResponseStatusException(HttpStatus.CONFLICT, "Email is already registered");
         User user = new User();

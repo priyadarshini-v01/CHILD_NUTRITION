@@ -18,7 +18,13 @@ public class ChildAccessService {
         return admin ? children.findAll() : children.findByParentEmailOrderByNameAsc(email);
     }
 
+    public Child lockForTargetChange(Long childId) {
+        return children.findByIdForUpdate(childId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Child not found"));
+    }
+
     public Child require(Long id, Authentication authentication) {
+        if (id == null || id <= 0) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Child ID must be a positive number.");
         boolean admin = authentication.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
         return (admin ? children.findById(id) : children.findByIdAndParentEmail(id, authentication.getName()))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Child not found"));

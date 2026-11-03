@@ -63,12 +63,13 @@ public class MealController {
         return rows.stream().map(get).reduce(BigDecimal.ZERO, BigDecimal::add);
     }
     private Meal requireMeal(Child child, Long id) {
+        if (id == null || id <= 0) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Meal ID must be a positive number.");
         return meals.findByIdAndChildId(id, child.getId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Meal not found"));
     }
     private void apply(Meal meal, MealDtos.Request r, String owner) {
         meal.setMealDate(r.mealDate()); meal.setMealTime(r.mealTime()); meal.setMealType(r.mealType());
-        FoodNutrition food = foods.findVisibleById(r.foodId(), owner).orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Food was not found"));
+        FoodNutrition food = foods.findVisibleById(r.foodId(), owner).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Food was not found"));
         meal.setFood(food); meal.setFoodName(food.getFoodName()); meal.setQuantity(r.quantity());
         meal.setQuantityUnit(food.getServingUnit());
         BigDecimal factor = r.quantity().divide(new BigDecimal("100"), 6, java.math.RoundingMode.HALF_UP);
@@ -78,5 +79,5 @@ public class MealController {
         meal.setSodium(scale(food.getSodium(), factor)); meal.setSaturatedFat(scale(food.getSaturatedFat(), factor));
         meal.setVitamins(r.vitamins()); meal.setMinerals(r.minerals()); meal.setNotes(r.notes());
     }
-    private BigDecimal scale(BigDecimal value, BigDecimal factor) { return value == null ? null : value.multiply(factor); }
+    private BigDecimal scale(BigDecimal value, BigDecimal factor) { return value == null ? null : value.multiply(factor).setScale(2, java.math.RoundingMode.HALF_UP); }
 }

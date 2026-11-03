@@ -26,9 +26,17 @@ public class FoodNutritionImportService implements ApplicationRunner {
         Map<String, List<String>> sourceRows = source.rows();
         Map<String, List<String>> extraRows = readSupplement();
         List<List<String>> catalogueRows = readCsv("data/food-catalogue.csv");
+        if (catalogueRows.isEmpty()) throw new IllegalStateException("Curated food catalogue is empty");
         List<String> catalogueHeader = catalogueRows.remove(0);
         int nameIndex = catalogueHeader.indexOf("Dish Name"), categoryIndex = catalogueHeader.indexOf("Category"), mealTypeIndex = catalogueHeader.indexOf("Meal Type");
         if (nameIndex < 0 || categoryIndex < 0 || mealTypeIndex < 0) throw new IllegalStateException("Curated food catalogue has invalid columns");
+        for (List<String> row : catalogueRows) {
+            if (row.size() != catalogueHeader.size()) throw new IllegalStateException("Curated food catalogue contains a malformed row");
+            if (row.get(nameIndex).isBlank() || row.get(categoryIndex).isBlank() || row.get(mealTypeIndex).isBlank())
+                throw new IllegalStateException("Curated food catalogue contains a missing name, category or meal type");
+            if (row.get(nameIndex).length() > 180 || row.get(categoryIndex).length() > 60 || row.get(mealTypeIndex).length() > 40)
+                throw new IllegalStateException("Curated food catalogue contains a value longer than the database field limit");
+        }
 
         foods.deactivateAll();
         Set<String> imported = new HashSet<>();
@@ -104,7 +112,12 @@ public class FoodNutritionImportService implements ApplicationRunner {
     private Map<String, List<String>> readSupplement() throws Exception {
         List<List<String>> records = readCsv("data/food-supplement-per-100g.csv"); supplementHeader = records.remove(0);
         Map<String,List<String>> rows = new HashMap<>(); int ix = supplementHeader.indexOf("Food name");
-        for (List<String> r : records) if (!r.get(ix).isBlank()) rows.put(r.get(ix).strip().toLowerCase(Locale.ROOT), r);
+        if (ix < 0) throw new IllegalStateException("Supplement nutrition dataset is missing its food name column");
+        for (List<String> r : records) {
+            if (r.size() != supplementHeader.size()) throw new IllegalStateException("Supplement nutrition dataset contains a malformed row");
+            if (!r.get(ix).isBlank() && rows.putIfAbsent(r.get(ix).strip().toLowerCase(Locale.ROOT), r) != null)
+                throw new IllegalStateException("Supplement nutrition dataset contains duplicate food names");
+        }
         return rows;
     }
 
@@ -117,7 +130,11 @@ public class FoodNutritionImportService implements ApplicationRunner {
             if (!columns.containsKey(required)) throw new IllegalStateException("Nutrition source CSV is missing column: " + required);
         Map<String, List<String>> rows = new HashMap<>();
         int name = columns.get("Dish Name");
-        for (List<String> row : records) if (!row.get(name).isBlank()) rows.put(row.get(name).strip().toLowerCase(Locale.ROOT), row);
+        for (List<String> row : records) {
+            if (row.size() != header.size()) throw new IllegalStateException("Nutrition source contains a malformed row");
+            if (!row.get(name).isBlank() && rows.putIfAbsent(row.get(name).strip().toLowerCase(Locale.ROOT), row) != null)
+                throw new IllegalStateException("Nutrition source contains duplicate food names");
+        }
         return new SourceData(header, rows);
     }
 
@@ -130,7 +147,10 @@ public class FoodNutritionImportService implements ApplicationRunner {
         int index = -1;
         for (int i = 0; i < header.size(); i++) if (header.get(i).strip().startsWith(column)) { index = i; break; }
         if (index < 0 || index >= row.size() || row.get(index).isBlank()) return null;
-        return new BigDecimal(row.get(index).strip());
+        BigDecimal value = new BigDecimal(row.get(index).strip());
+        if (value.signum() < 0 || value.compareTo(new BigDecimal("100000")) > 0)
+            throw new IllegalStateException("Nutrition source contains an implausible value in " + column);
+        return value;
     }
 
     private record SourceData(List<String> header, Map<String, List<String>> rows) { }
@@ -156,6 +176,7 @@ public class FoodNutritionImportService implements ApplicationRunner {
             else if (c == ',' && !quoted) { fields.add(field.toString()); field.setLength(0); }
             else field.append(c);
         }
+        if (quoted) throw new IllegalStateException("Nutrition CSV contains an unterminated quoted field");
         fields.add(field.toString()); return fields;
     }
 }
